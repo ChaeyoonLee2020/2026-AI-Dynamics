@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 한국 AI 빅테크 마케팅 & 포지셔닝 리포트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 기본 폰트 및 부드러운 스크롤 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        html { scroll-behavior: smooth; }
+
+        /* Chart Container Requirements (Crucial for responsiveness and preventing overflow) */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 450px;
+            min-height: 300px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container { height: 50vh; }
+        }
+
+        /* Custom Scrollbar for aesthetic */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        /* Animation Classes */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Company Brand Colors as CSS variables for dynamic styling */
+        :root {
+            --color-openai: #10A37F;
+            --color-ms: #00A4EF;
+            --color-google: #4285F4;
+            --color-anthropic: #D97757;
+            --color-naver: #03C75A;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+<!-- Chosen Palette: Warm Neutrals (Slate 50 to 900) with Brand-specific Accents (Teal, Blue, Orange, Green) -->
+
+<!-- Application Structure Plan: 
+  This SPA is designed as an interactive executive briefing. 
+  1. Header/Intro: Establishes the persona (30-year marketing expert) and context (2026 Korean Market).
+  2. The Interactive Positioning Map (Scatter Chart): The core UI. Users can visually understand the landscape (B2B/B2C vs Global/Local) and click on nodes. This encourages active exploration.
+  3. Dynamic Detail Panel: Updates based on the map selection. Shows the requested "one-line positioning," specific marketing strategies, and paid user tactics. This prevents information overload by revealing details progressively.
+  4. Quantitative Market View (Bar Chart): Provides the required numerical data/market share estimates to back up the qualitative analysis.
+  This structure moves from 'Big Picture' to 'Specific Details' to 'Data Validation', mimicking a professional consultation.
+-->
+
+<!-- Visualization & Content Choices:
+  - Positioning Map: Scatter Plot (Chart.js) -> Goal: Compare player positions -> Justification: Best for 2D relational mapping. Highly interactive.
+  - Detail Panel: Dynamic HTML/Text -> Goal: Inform -> Justification: Clear readability for qualitative marketing strategies.
+  - Market Share: Stacked Bar Chart (Chart.js) -> Goal: Compare B2B vs B2C paid user volume -> Justification: Clearly shows total volume and segment breakdown per player.
+-->
+
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. All visual elements are HTML/CSS or Chart.js Canvas. -->
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header Section -->
+    <header class="mb-12 border-b border-slate-200 pb-8">
+        <div class="flex items-center space-x-3 mb-4">
+            <span class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full tracking-wider">EXECUTIVE BRIEFING</span>
+            <span class="text-slate-500 text-sm font-medium">Q1 2026 Edition</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+            2026 한국 AI 빅테크 마케팅 동향 & <br class="hidden md:block" />
+            <span class="text-indigo-600">유료화 포지셔닝 맵</span>
+        </h1>
+        <p class="text-lg text-slate-600 max-w-3xl leading-relaxed">
+            안녕하세요. 30년 경력의 테크 마케팅 디렉터입니다. 2026년 현재, 한국 AI 시장은 '신기한 기술'을 넘어 '필수 유료 구독'의 시대로 접어들었습니다. OpenAI, Google, Microsoft, Anthropic, 그리고 토종 강자 Naver까지. 각 기업들이 한국 시장에서 유료 고객(Paid Users)을 확보하기 위해 어떤 치열한 포지셔닝과 마케팅 전략을 전개하고 있는지 구조화된 데이터와 함께 분석해 드립니다.
+        </p>
+    </header>
+
+    <main class="space-y-16">
+
+        <!-- Section 1: Interactive Positioning Map -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-10">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">2026 AI 브랜드 포지셔닝 맵</h2>
+                <p class="text-slate-600">
+                    각 기업의 한국 시장 내 위치를 보여줍니다. <strong class="text-indigo-600">원(점)을 클릭하시면</strong> 해당 기업의 상세한 한 줄 포지셔닝과 유료 모객 마케팅 전략을 확인할 수 있습니다.
+                </p>
+            </div>
+            
+            <!-- Chart Container for Positioning Map -->
+            <div class="chart-container mb-8">
+                <canvas id="positioningMap"></canvas>
+            </div>
+
+            <!-- Dynamic Detail Panel -->
+            <div id="detailPanel" class="bg-slate-50 rounded-xl p-6 md:p-8 border border-slate-200 hidden fade-in transition-all duration-300">
+                <div class="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div id="panelColor" class="w-4 h-4 rounded-full"></div>
+                            <h3 id="panelBrand" class="text-3xl font-bold text-slate-900">Brand Name</h3>
+                        </div>
+                        <p id="panelOneLiner" class="text-xl font-medium text-slate-700 mt-2 leading-snug">
+                            "한 줄 포지셔닝"
+                        </p>
+                    </div>
+                    <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-slate-100 text-center min-w-[150px]">
+                        <p class="text-xs text-slate-500 font-semibold mb-1 uppercase">2026 추정 유료 구독자</p>
+                        <p id="panelUsers" class="text-2xl font-bold text-slate-900">00만 명</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Column 1: Core Strategy -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">유료 고객 모객 전략 (Monetization)</h4>
+                        <ul id="panelStrategy" class="space-y-3">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                    <!-- Column 2: Marketing Actions -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">주요 마케팅 액션 (Marketing Tactics)</h4>
+                        <ul id="panelTactics" class="space-y-3">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Default Placeholder when no node is clicked -->
+            <div id="defaultPanelMsg" class="text-center py-12 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+                <span class="text-4xl mb-3 block">👆</span>
+                <p class="text-slate-500 font-medium">위의 그래프에서 기업을 선택하여 상세 전략을 분석해보세요.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Quantitative Data - Market Share -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-10">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">한국 시장 유료 구독자 추이 데이터 (2026 Q1 추정치)</h2>
+                <p class="text-slate-600">
+                    전략이 어떻게 실제 수치로 이어지고 있는지 보여주는 B2B(기업용) 및 B2C(개인용) 유료 구독자 수치입니다. (단위: 만 명)
+                </p>
+            </div>
+            
+            <!-- Chart Container for Bar Chart -->
+            <div class="chart-container">
+                <canvas id="marketShareChart"></canvas>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <p class="text-xs text-indigo-600 font-bold mb-1 uppercase">Key Insight 1</p>
+                    <p class="text-sm text-slate-700">MS는 로컬 SI업체들과의 공격적인 제휴로 B2B 시장에서 압도적인 점유율을 확보했습니다.</p>
+                </div>
+                <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
+                    <p class="text-xs text-teal-600 font-bold mb-1 uppercase">Key Insight 2</p>
+                    <p class="text-sm text-slate-700">OpenAI는 'GPT Store' 생태계를 무기로 B2C 긱워커 및 개인 크리에이터 시장을 선점 중입니다.</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                    <p class="text-xs text-orange-600 font-bold mb-1 uppercase">Key Insight 3</p>
+                    <p class="text-sm text-slate-700">Anthropic은 할루시네이션 최소화를 강조하며 번역가, 개발자 등 하드코어 프로페셔널 층에서 급성장했습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Expert Conclusion -->
+        <section class="bg-slate-900 rounded-2xl p-8 md:p-12 text-white">
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">전문가 총평 및 2026 하반기 전망</h2>
+            <div class="w-16 h-1 bg-indigo-500 mb-6"></div>
+            <p class="text-slate-300 text-lg leading-relaxed mb-6">
+                2026년 한국 AI 시장은 '누가 더 똑똑한가'의 경쟁에서 <strong class="text-white">'누가 내 업무와 일상에 더 매끄럽게 연결되는가(Seamless Integration)'</strong>의 경쟁으로 완전히 전환되었습니다. 
+            </p>
+            <ul class="space-y-4 text-slate-300">
+                <li class="flex items-start">
+                    <span class="text-indigo-400 mr-3">✔</span>
+                    <span><strong>번들링 전략의 승리:</strong> 단독 AI 구독보다는 Google One, Microsoft 365, Naver Plus 멤버십 등 기존 생태계와 결합된 번들링 마케팅이 고객 이탈률(Churn rate)을 획기적으로 낮추고 있습니다.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-indigo-400 mr-3">✔</span>
+                    <span><strong>니치 마켓의 부상:</strong> Anthropic처럼 '안전성'과 '정교한 한국어 뉘앙스'라는 명확한 엣지를 가진 플레이어들이 대중성보다는 객단가(ARPU)가 높은 전문직 시장을 파고들며 수익성을 극대화하고 있습니다.</span>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+    
+    <footer class="mt-16 text-center text-slate-400 text-sm pb-10">
+        <p>© 2026 Tech Marketing Insights. All simulated data for analytical demonstration.</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- Data Definitions (2026 Simulated Data based on expert analysis) ---
+    
+    const companyData = {
+        'openai': {
+            id: 'openai',
+            name: 'OpenAI (ChatGPT)',
+            color: '#10A37F',
+            x: 1,  // B2C (0) to B2B (10) - Slightly B2B leaning but very balanced
+            y: 2,  // Global (0) to Local (10) - Very Global
+            radius: 20, // Relative bubble size
+            oneLiner: "압도적인 범용 지능을 바탕으로 한, 누구도 부인할 수 없는 AI의 글로벌 표준",
+            users: "185", // 만 명
+            b2bUsers: 85,
+            b2cUsers: 100,
+            strategy: [
+                "<b>생태계 락인(Lock-in):</b> GPT Store를 통한 플러그인 생태계 확장으로 엑셀, 노션 등 타 앱으로의 이탈 방지",
+                "<b>계단식 요금제:</b> Plus -> Team -> Enterprise 로 이어지는 촘촘한 업셀링(Upselling) 퍼널 구축"
+            ],
+            tactics: [
+                "스타트업 인큐베이팅 프로그램 및 API 크레딧 무상 지원으로 초기 개발자 생태계 장악",
+                "국내 주요 대학 대상 '캠퍼스 플랜' 반값 프로모션으로 미래 유료 고객(Z세대) 선점"
+            ]
+        },
+        'microsoft': {
+            id: 'microsoft',
+            name: 'Microsoft (Copilot)',
+            color: '#00A4EF',
+            x: 8,  // Highly B2B
+            y: 3,  // Global framework but strong local enterprise roots
+            radius: 24,
+            oneLiner: "업무 생산성의 혁신을 즉각적으로 실현하는 가장 현실적이고 강력한 B2B 파트너",
+            users: "210",
+            b2bUsers: 180,
+            b2cUsers: 30,
+            strategy: [
+                "<b>슈퍼 번들링:</b> 기존 M365(엑셀, 워드, 팀즈) 사용 환경에 Copilot을 기본 탑재하여 과금 저항 최소화",
+                "<b>엔터프라이즈 보안 강조:</b> 폐쇄망 수준의 데이터 보안(Data Privacy) 보장을 B2B 세일즈의 최우선 가치로 소구"
+            ],
+            tactics: [
+                "국내 대형 SI(시스템 통합) 업체들과의 파트너십을 통한 대기업/공공기관 Top-down 세일즈",
+                "'Copilot 도입 전/후 업무시간 절감 리포트'를 경영진 타겟으로 맞춤형 배포 (B2B 콘텐츠 마케팅)"
+            ]
+        },
+        'google': {
+            id: 'google',
+            name: 'Google (Gemini)',
+            color: '#4285F4',
+            x: -4, // Strongly B2C leaning (Mobile/Android)
+            y: 5,  // Mid-way (Deep Android/Youtube local penetration)
+            radius: 18,
+            oneLiner: "유튜브, 안드로이드 생태계와의 완벽한 결합으로 완성되는 매끄러운 일상의 AI",
+            users: "140",
+            b2bUsers: 40,
+            b2cUsers: 100,
+            strategy: [
+                "<b>크로스 셀링(Cross-selling):</b> Google One (클라우드 스토리지) 구독자에게 Gemini Advanced를 할인 제공하여 자연스러운 전환 유도",
+                "<b>모바일 네이티브:</b> 안드로이드 OS의 기본 어시스턴트로 탑재하여 가장 높은 접근성 확보"
+            ],
+            tactics: [
+                "유튜브 프리미엄 이용자 대상 'Gemini 요약봇' 3개월 무료 체험 프로모션",
+                "갤럭시 등 국내 스마트폰 제조사와의 하드웨어 온디바이스 AI 마케팅 공동 전개"
+            ]
+        },
+        'anthropic': {
+            id: 'anthropic',
+            name: 'Anthropic (Claude)',
+            color: '#D97757',
+            x: 2,  // Prosumer / Mid B2B
+            y: 4,  // High quality Korean translation/nuance gives it an edge locally
+            radius: 12,
+            oneLiner: "최고 수준의 안전성과 자연스러운 한국어 구사력을 갖춘, 하드코어 프로페셔널의 신뢰받는 AI",
+            users: "65",
+            b2bUsers: 45,
+            b2cUsers: 20,
+            strategy: [
+                "<b>페인포인트 집중 공략:</b> 코딩, 긴 문서 분석, 번역 등 타사 AI가 취약한(환각 현상 등) 하이엔드 작업 영역에서 압도적 성능 소구",
+                "<b>프로슈머 타겟팅:</b> 무료 버전의 메시지 제한을 타이트하게 두어, 헤비 유저의 유료 구독(Claude Pro) 전환율 극대화"
+            ],
+            tactics: [
+                "국내 IT/개발자 커뮤니티(Velog, OKKY 등) 및 기획자 커뮤니티 타겟 집중 디스플레이/콘텐츠 광고",
+                "유명 IT 유튜버를 통한 '긴 문서/논문 요약 성능 타사 비교' 리뷰 바이럴 마케팅"
+            ]
+        },
+        'naver': {
+            id: 'naver',
+            name: 'Naver (HyperClova X)',
+            color: '#03C75A',
+            x: 5,  // Balanced, strong local SME
+            y: 9,  // Extremely Localized
+            radius: 16,
+            oneLiner: "가장 한국적인 데이터를 학습하여, 한국인과 한국 기업에게 가장 편리하고 안전한 맞춤형 AI",
+            users: "120",
+            b2bUsers: 70,
+            b2cUsers: 50,
+            strategy: [
+                "<b>Sovereign AI (데이터 주권):</b> 국내 데이터센터 저장 및 한국 법규 완벽 준수를 내세워 공공/금융 섹터 B2B 시장 독점",
+                "<b>로컬 커머스/검색 연동:</b> 네이버 스마트스토어 판매자용 AI 도구 및 네이버 플러스 멤버십 생태계 결합"
+            ],
+            tactics: [
+                "스마트스토어 50만 셀러 대상 'AI 상품명/상세페이지 작성 툴' 기본 제공 후 고급 기능 유료화 (Freemium)",
+                "국내 1위 포털 검색 점유율을 활용, 메인 화면의 CUE:(검색 AI) 사용 경험을 자연스럽게 유료 서비스로 연결"
+            ]
+        }
+    };
+
+    // --- Chart Implementations ---
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        
+        // 1. Positioning Map (Scatter Plot)
+        const ctxPositioning = document.getElementById('positioningMap').getContext('2d');
+        
+        const scatterData = {
+            datasets: Object.values(companyData).map(company => ({
+                label: company.name,
+                data: [{ x: company.x, y: company.y, id: company.id }], // Add id to data payload
+                backgroundColor: company.color + 'CC', // Add transparency
+                borderColor: company.color,
+                borderWidth: 2,
+                pointRadius: company.radius,
+                pointHoverRadius: company.radius + 5,
+            }))
+        };
+
+        const positioningChart = new Chart(ctxPositioning, {
+            type: 'scatter',
+            data: scatterData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allows the container CSS to control height
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Pretendard' } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { size: 14, family: 'Pretendard' },
+                        bodyFont: { size: 13, family: 'Pretendard' },
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return `클릭하여 전략 확인하기`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        min: -10,
+                        max: 10,
+                        title: { display: true, text: '← B2C (개인/크리에이터 중심)     포지셔닝 축     B2B (엔터프라이즈/생산성 중심) →', font: { weight: 'bold', family: 'Pretendard' } },
+                        grid: { color: '#E2E8F0', zeroLineColor: '#94A3B8', zeroLineWidth: 2 }
+                    },
+                    y: {
+                        min: 0,
+                        max: 10,
+                        title: { display: true, text: '← 글로벌 범용 기술 중심     로컬 생태계/한국화 중심 →', font: { weight: 'bold', family: 'Pretendard' } },
+                        grid: { color: '#E2E8F0', zeroLineColor: '#94A3B8', zeroLineWidth: 2 }
+                    }
+                },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const datasetIndex = elements[0].datasetIndex;
+                        const dataIndex = elements[0].index;
+                        const companyId = positioningChart.data.datasets[datasetIndex].data[dataIndex].id;
+                        updateDetailView(companyId);
+                    }
+                },
+                // Change cursor on hover
+                onHover: (e, elements) => {
+                    e.native.target.style.cursor = elements[0] ? 'pointer' : 'default';
+                }
+            }
+        });
+
+        // 2. Interaction Logic: Update Detail Panel
+        function updateDetailView(companyId) {
+            const data = companyData[companyId];
+            if (!data) return;
+
+            // Hide default message, show panel
+            document.getElementById('defaultPanelMsg').style.display = 'none';
+            const panel = document.getElementById('detailPanel');
+            panel.classList.remove('hidden');
+            
+            // Retrigger animation
+            panel.classList.remove('fade-in');
+            void panel.offsetWidth; // trigger reflow
+            panel.classList.add('fade-in');
+
+            // Populate data
+            document.getElementById('panelBrand').textContent = data.name;
+            document.getElementById('panelBrand').style.color = data.color;
+            document.getElementById('panelColor').style.backgroundColor = data.color;
+            document.getElementById('panelOneLiner').textContent = `"${data.oneLiner}"`;
+            document.getElementById('panelUsers').textContent = `${data.users}만 명`;
+
+            // Populate Lists
+            const strategyList = document.getElementById('panelStrategy');
+            strategyList.innerHTML = data.strategy.map(item => 
+                `<li class="flex items-start"><span class="text-slate-300 mr-2 mt-0.5">▪</span><span class="text-slate-700 text-sm md:text-base leading-relaxed">${item}</span></li>`
+            ).join('');
+
+            const tacticsList = document.getElementById('panelTactics');
+            tacticsList.innerHTML = data.tactics.map(item => 
+                `<li class="flex items-start"><span class="text-slate-300 mr-2 mt-0.5">▪</span><span class="text-slate-700 text-sm md:text-base leading-relaxed">${item}</span></li>`
+            ).join('');
+        }
+
+        // 3. Market Share Bar Chart
+        const ctxMarket = document.getElementById('marketShareChart').getContext('2d');
+        
+        // Prepare arrays from object
+        const labels = [];
+        const b2bData = [];
+        const b2cData = [];
+        const colors = [];
+        
+        // Sort by total users descending
+        const sortedCompanies = Object.values(companyData).sort((a, b) => parseInt(b.users) - parseInt(a.users));
+
+        sortedCompanies.forEach(company => {
+            labels.push(company.name);
+            b2bData.push(company.b2bUsers);
+            b2cData.push(company.b2cUsers);
+            colors.push(company.color);
+        });
+
+        new Chart(ctxMarket, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'B2B (기업용 구독)',
+                        data: b2bData,
+                        backgroundColor: colors.map(c => c), // Solid color
+                        borderWidth: 0,
+                        barPercentage: 0.6
+                    },
+                    {
+                        label: 'B2C (개인용 구독)',
+                        data: b2cData,
+                        backgroundColor: colors.map(c => c + '66'), // 40% opacity for B2C layer
+                        borderWidth: 0,
+                        barPercentage: 0.6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', font: { family: 'Pretendard' } },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { family: 'Pretendard' },
+                        bodyFont: { family: 'Pretendard' },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) { label += context.parsed.y + '만 명'; }
+                                return label;
+                            },
+                            footer: function(tooltipItems) {
+                                let total = 0;
+                                tooltipItems.forEach(function(tooltipItem) {
+                                    total += tooltipItem.parsed.y;
+                                });
+                                return '총합: ' + total + '만 명';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false }
+                    },
+                    y: {
+                        stacked: true,
+                        title: { display: true, text: '구독자 수 (만 명)', font: { family: 'Pretendard' } },
+                        grid: { color: '#F1F5F9' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
